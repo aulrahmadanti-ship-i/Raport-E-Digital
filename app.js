@@ -19,6 +19,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Debug logging for requests
+app.use(function(req, res, next) {
+  console.log('[v0] Request received:', req.method, req.path);
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
