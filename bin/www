@@ -13,6 +13,7 @@ var http = require('http');
  */
 
 var port = normalizePort(process.env.PORT || '3000');
+var currentPort = port;
 app.set('port', port);
 
 /**
@@ -25,7 +26,8 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+var attemptedPorts = [];
+server.listen(currentPort);
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -58,9 +60,9 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof currentPort === 'string'
+    ? 'Pipe ' + currentPort
+    : 'Port ' + currentPort;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
@@ -69,8 +71,14 @@ function onError(error) {
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
+      attemptedPorts.push(currentPort);
+      if (attemptedPorts.length >= 10) {
+        console.error('Could not find an available port after trying 10 ports');
+        process.exit(1);
+      }
+      currentPort = port + attemptedPorts.length;
+      console.log('[v0] Port ' + (port + attemptedPorts.length - 1) + ' in use, trying port ' + currentPort);
+      server.listen(currentPort);
       break;
     default:
       throw error;
