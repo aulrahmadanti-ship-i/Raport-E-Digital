@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lihat Nilai - E-Rapor Digital</title>
+    
+    <!-- Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        sma: {
+                            grey: '#8E9196',
+                            dark: '#6B6E72',
+                            light: '#B0B3B8'
+                        },
+                        slate: {
+                            bg: '#F8FAFC',
+                            card: '#FFFFFF'
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'soft': '0 4px 20px -2px rgba(0,0,0,0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #F8FAFC; }
+        /* Smooth fade in for table rows */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- Reusable Sidebar Component (Consistent with Dashboard) ---
+        const Sidebar = ({ isOpen, toggleSidebar }) => {
+            const [activeMenu, setActiveMenu] = useState('Lihat Nilai'); // Default active
+
+            const menuItems = [
+                { id: 'dashboard', label: 'Dashboard', icon: 'fa-grid-2', subItems: [] },
+                { id: 'rapor', label: 'Rapor Digital', icon: 'fa-book-open', subItems: ['Lihat Nilai', 'Unduh Rapor'] },
+                { id: 'career', label: 'Career Builder', icon: 'fa-briefcase', subItems: ['Template CV', 'Portofolio'] },
+                { id: 'academic', label: 'Academic Info', icon: 'fa-graduation-cap', subItems: [] }
+            ];
+
+            return (
+                <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white shadow-premium transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+                    <div className="h-full flex flex-col p-6">
+                        <div className="flex items-center gap-3 mb-10">
+                            <div className="w-10 h-10 bg-sma-grey rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">E</div>
+                            <div>
+                                <h1 className="text-xl font-bold text-gray-800 leading-tight">E-Rapor</h1>
+                                <p className="text-xs text-sma-grey font-medium tracking-wider">DIGITAL SYSTEM</p>
+                            </div>
+                        </div>
+
+                        <nav className="flex-1 space-y-2">
+                            {menuItems.map((item) => (
+                                <div key={item.id} className="mb-2">
+                                    <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${activeMenu === item.label ? 'bg-sma-grey text-white' : 'text-gray-500 hover:bg-slate-50 hover:text-sma-grey'}`}>
+                                        <div className="flex items-center gap-4">
+                                            <i className={`fa-solid ${item.icon} w-5 text-center`}></i>
+                                            <span className="font-medium text-sm">{item.label}</span>
+                                        </div>
+                                        {item.subItems.length > 0 && <i className="fa-solid fa-chevron-down text-xs"></i>}
+                                    </div>
+                                    {item.subItems.length > 0 && (
+                                        <div className="pl-12 mt-1 space-y-1">
+                                            {item.subItems.map((sub) => (
+                                                <div key={sub} className={`text-sm py-2 px-3 rounded-lg cursor-pointer transition-colors ${activeMenu === sub ? 'text-sma-grey font-semibold bg-slate-100' : 'text-gray-400 hover:text-sma-grey'}`}>
+                                                    {sub}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </nav>
+                    </div>
+                </aside>
+            );
+        };
+
+        // --- Main Digital Report Component ---
+        const ReportCard = () => {
+            const [selectedSemester, setSelectedSemester] = useState('Ganjil 2023/2024');
+            
+            // Mock Data for Grades
+            const grades = [
+                { no: 1, subject: 'Matematika Wajib', kkm: 75, knowledge: 85, skill: 88, grade: 'A' },
+                { no: 2, subject: 'Bahasa Indonesia', kkm: 75, knowledge: 92, skill: 90, grade: 'A' },
+                { no: 3, subject: 'Bahasa Inggris', kkm: 75, knowledge: 88, skill: 82, grade: 'A' },
+                { no: 4, subject: 'Fisika', kkm: 70, knowledge: 78, skill: 75, grade: 'B' },
+                { no: 5, subject: 'Kimia', kkm: 70, knowledge: 82, skill: 80, grade: 'B' },
+                { no: 6, subject: 'Biologi', kkm: 70, knowledge: 90, skill: 85, grade: 'A' },
+                { no: 7, subject: 'Sejarah Indonesia', kkm: 75, knowledge: 85, skill: 85, grade: 'A' },
+                { no: 8, subject: 'Pendidikan Agama', kkm: 75, knowledge: 95, skill: 95, grade: 'A' },
+                { no: 9, subject: 'PJOK', kkm: 75, knowledge: 88, skill: 90, grade: 'A' },
+                { no: 10, subject: 'Seni Budaya', kkm: 75, knowledge: 80, skill: 82, grade: 'B' },
+            ];
+
+            const getGradeColor = (grade) => {
+                if(grade === 'A') return 'text-green-600 bg-green-50';
+                if(grade === 'B') return 'text-blue-600 bg-blue-50';
+                return 'text-yellow-600 bg-yellow-50';
+            };
+
+            return (
+                <div className="bg-slate-bg min-h-screen flex">
+                    {/* Sidebar Container */}
+                    <div className="hidden lg:block w-72">
+                        <Sidebar isOpen={false} toggleSidebar={() => {}} />
+                    </div>
+
+                    {/* Mobile Sidebar Toggle Placeholder */}
+                    <div className="lg:hidden fixed bottom-4 right-4 z-50">
+                        <button className="w-12 h-12 bg-sma-grey text-white rounded-full shadow-lg flex items-center justify-center">
+                            <i className="fa-solid fa-bars"></i>
+                        </button>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+                        <div className="max-w-6xl mx-auto space-y-6">
+                            
+                            {/* Header Section */}
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 fade-in">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800">Rapor Digital Siswa</h2>
+                                    <p className="text-sm text-gray-500">Lihat hasil belajar dan rekapitulasi akademik Anda.</p>
+                                </div>
+                                
+                                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                                    <div className="relative">
+                                        <select 
+                                            value={selectedSemester} 
+                                            onChange={(e) => setSelectedSemester(e.target.value)}
+                                            className="appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-sma-grey focus:border-transparent shadow-sm text-sm font-medium w-full sm:w-48 cursor-pointer"
+                                        >
+                                            <option>Ganjil 2023/2024</option>
+                                            <option>Genap 2023/2024</option>
+                                            <option>Ganjil 2022/2023</option>
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                            <i className="fa-solid fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+
+                                    <button className="bg-white border border-sma-grey text-sma-grey hover:bg-sma-grey hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                                        <i className="fa-solid fa-file-pdf"></i> Download PDF
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Main Report Card */}
+                            <div className="bg-white rounded-3xl shadow-premium overflow-hidden fade-in relative border border-gray-100">
+                                
+                                {/* Verified Badge */}
+                                <div className="absolute top-0 right-0 bg-gradient-to-l from-slate-100 to-transparent h-full w-24 pointer-events-none flex items-start justify-end pt-4 pr-4 opacity-50">
+                                    {/* Watermark Effect */}
+                                </div>
+                                <div className="absolute top-6 right-6 bg-green-50 border border-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-sm z-10">
+                                    <i className="fa-solid fa-shield-halved"></i> DATA TERVERIFIKASI
+                                </div>
+
+                                {/* Student Info Header */}
+                                <div className="bg-slate-50 p-6 border-b border-gray-100">
+                                    <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <img src="https://picsum.photos/seed/studentUser/100/100" alt="Student" className="w-16 h-16 rounded-2xl object-cover shadow-sm border-2 border-white" />
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-800">Rizky Pratama</h3>
+                                                <p className="text-sm text-gray-500">NISN: 0056781234 | Kelas: XII-IPA 1</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs text-sma-grey uppercase font-semibold tracking-wider">Semester</p>
+                                            <p className="text-lg font-bold text-gray-800">{selectedSemester}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Table Section */}
+                                <div className="p-6 overflow-x-auto">
+                                    <table className="w-full min-w-[600px] text-left border-collapse">
+                                        <thead>
+                                            <tr className="text-xs uppercase tracking-wider text-sma-grey border-b border-gray-200">
+                                                <th className="pb-3 pl-2 font-semibold">No</th>
+                                                <th className="pb-3 font-semibold w-1/3">Mata Pelajaran</th>
+                                                <th className="pb-3 text-center font-semibold">KKM</th>
+                                                <th className="pb-3 text-center font-semibold">Nilai Pengetahuan</th>
+                                                <th className="pb-3 text-center font-semibold">Nilai Keterampilan</th>
+                                                <th className="pb-3 text-center font-semibold">Predikat</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-sm text-gray-700 divide-y divide-gray-50">
+                                            {grades.map((row, idx) => (
+                                                <tr key={idx} className="group hover:bg-slate-50 transition-colors">
+                                                    <td className="py-4 pl-2 font-medium text-gray-400">{row.no}</td>
+                                                    <td className="py-4 font-semibold text-gray-800">{row.subject}</td>
+                                                    <td className="py-4 text-center text-gray-500">{row.kkm}</td>
+                                                    <td className="py-4 text-center font-medium">{row.knowledge}</td>
+                                                    <td className="py-4 text-center font-medium">{row.skill}</td>
+                                                    <td className="py-4 text-center">
+                                                        <span className={`px-3 py-1 rounded-lg text-xs font-bold ${getGradeColor(row.grade)}`}>
+                                                            {row.grade}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Footer Summary Section */}
+                                <div className="bg-slate-50/50 p-6 border-t border-gray-100">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        
+                                        {/* Attendance Summary */}
+                                        <div>
+                                            <h4 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <i className="fa-regular fa-calendar-check text-sma-grey"></i> Ketidakhadiran
+                                            </h4>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="bg-white p-3 rounded-xl border border-gray-100 text-center shadow-sm">
+                                                    <p className="text-xs text-gray-400 mb-1">Sakit</p>
+                                                    <p className="text-xl font-bold text-sma-grey">1</p>
+                                                </div>
+                                                <div className="bg-white p-3 rounded-xl border border-gray-100 text-center shadow-sm">
+                                                    <p className="text-xs text-gray-400 mb-1">Izin</p>
+                                                    <p className="text-xl font-bold text-sma-grey">0</p>
+                                                </div>
+                                                <div className="bg-white p-3 rounded-xl border border-gray-100 text-center shadow-sm">
+                                                    <p className="text-xs text-gray-400 mb-1">Alpa</p>
+                                                    <p className="text-xl font-bold text-red-500">0</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Extracurriculars */}
+                                        <div>
+                                            <h4 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <i className="fa-solid fa-medal text-sma-grey"></i> Ekstrakurikuler
+                                            </h4>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-xs">
+                                                            <i className="fa-solid fa-basketball"></i>
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-700">Basketball Club</span>
+                                                    </div>
+                                                    <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">A</span>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-500 flex items-center justify-center text-xs">
+                                                            <i className="fa-solid fa-robot"></i>
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-700">Robotics</span>
+                                                    </div>
+                                                    <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">B</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Signature / Footer Note */}
+                            <div className="text-center text-xs text-gray-400 pb-8">
+                                <p>Dokumen ini diterbitkan secara digital oleh E-Rapor System SMA.</p>
+                                <p className="mt-1">Tanggal Cetak: {new Date().toLocaleDateString('id-ID')}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ReportCard />);
+    </script>
+</body>
+</html>

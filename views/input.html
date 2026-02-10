@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Nilai Guru - E-Rapor Digital</title>
+    
+    <!-- Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        sma: {
+                            grey: '#8E9196',
+                            dark: '#6B6E72',
+                            light: '#B0B3B8'
+                        },
+                        slate: {
+                            bg: '#F8FAFC',
+                            card: '#FFFFFF'
+                        },
+                        success: {
+                            DEFAULT: '#10B981', // Emerald 500
+                            light: '#D1FAE5',    // Emerald 100
+                            dark: '#047857'      // Emerald 700
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'soft': '0 4px 20px -2px rgba(0,0,0,0.05)',
+                        'glow-green': '0 0 15px rgba(16, 185, 129, 0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #F8FAFC; }
+        .custom-input::-webkit-outer-spin-button,
+        .custom-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Firefox */
+        .custom-input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Reusable Sidebar (Teacher Context) ---
+        const Sidebar = ({ isOpen, toggleSidebar }) => {
+            const [activeMenu, setActiveMenu] = useState('Input Nilai');
+
+            const menuItems = [
+                { id: 'dashboard', label: 'Dashboard', icon: 'fa-grid-2', subItems: [] },
+                { 
+                    id: 'rapor', 
+                    label: 'Rapor Digital', 
+                    icon: 'fa-book-open', 
+                    subItems: ['Input Nilai', 'Validasi Nilai', 'Cetak Rapor'] // Added Input Nilai
+                },
+                { id: 'students', label: 'Data Siswa', icon: 'fa-users', subItems: [] },
+                { id: 'settings', label: 'Pengaturan', icon: 'fa-gear', subItems: [] }
+            ];
+
+            return (
+                <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white shadow-premium transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+                    <div className="h-full flex flex-col p-6">
+                        <div className="flex items-center gap-3 mb-10">
+                            <div className="w-10 h-10 bg-sma-grey rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">E</div>
+                            <div>
+                                <h1 className="text-xl font-bold text-gray-800 leading-tight">E-Rapor</h1>
+                                <p className="text-xs text-sma-grey font-medium tracking-wider">TEACHER PORTAL</p>
+                            </div>
+                        </div>
+
+                        <nav className="flex-1 space-y-2">
+                            {menuItems.map((item) => (
+                                <div key={item.id} className="mb-2">
+                                    <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${activeMenu === item.label ? 'bg-sma-grey text-white' : 'text-gray-500 hover:bg-slate-50 hover:text-sma-grey'}`}>
+                                        <div className="flex items-center gap-4">
+                                            <i className={`fa-solid ${item.icon} w-5 text-center`}></i>
+                                            <span className="font-medium text-sm">{item.label}</span>
+                                        </div>
+                                        {item.subItems.length > 0 && <i className="fa-solid fa-chevron-down text-xs"></i>}
+                                    </div>
+                                    {item.subItems.length > 0 && (
+                                        <div className="pl-12 mt-1 space-y-1">
+                                            {item.subItems.map((sub) => (
+                                                <div key={sub} className={`text-sm py-2 px-3 rounded-lg cursor-pointer transition-colors ${activeMenu === sub ? 'bg-slate-100 text-sma-grey font-semibold' : 'text-gray-400 hover:text-sma-grey'}`}>
+                                                    {sub}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </nav>
+                        
+                        <div className="pt-4 border-t border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <img src="https://picsum.photos/seed/teacher1/100/100" className="w-10 h-10 rounded-full" />
+                                <div>
+                                    <p className="text-sm font-bold text-gray-800">Bpk. Budi Santoso</p>
+                                    <p className="text-xs text-sma-grey">Guru Matematika</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            );
+        };
+
+        // --- Components ---
+
+        const UploadSection = () => {
+            const [isDragging, setIsDragging] = useState(false);
+
+            return (
+                <div className="bg-white rounded-3xl shadow-soft p-8 mb-6 border border-gray-100">
+                    <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+                        {/* Drag & Drop Area */}
+                        <div 
+                            className={`flex-1 w-full border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${isDragging ? 'border-sma-grey bg-slate-50' : 'border-gray-200 hover:border-sma-grey'}`}
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={() => setIsDragging(false)}
+                        >
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-sma-grey text-2xl mb-4">
+                                <i className="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800">Upload File Nilai</h3>
+                            <p className="text-sm text-gray-500 mt-2">Seret & Lepas file Excel di sini, atau klik untuk mencari.</p>
+                            <p className="text-xs text-gray-400 mt-1">Format .xlsx, Maks. 5MB</p>
+                        </div>
+
+                        {/* Template Button */}
+                        <div className="w-full lg:w-auto flex flex-col items-center gap-2">
+                            <button className="group flex items-center gap-3 px-6 py-4 bg-green-50 hover:bg-green-100 border border-green-200 rounded-2xl transition-all w-full lg:w-auto">
+                                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition-transform">
+                                    <i className="fa-solid fa-file-excel"></i>
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold text-green-800">Download Template</p>
+                                    <p className="text-xs text-green-600">Format .xlsx</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProgressSidebar = ({ students }) => {
+            const completedCount = students.filter(s => s.knowledge && s.skill).length;
+            const totalCount = students.length;
+            const progressPercent = Math.round((completedCount / totalCount) * 100);
+
+            return (
+                <div className="w-full lg:w-80 flex-shrink-0">
+                    <div className="bg-white rounded-3xl shadow-premium p-6 sticky top-6 border border-gray-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-gray-800">Progress Input</h3>
+                            <span className="text-xs font-bold bg-slate-100 px-2 py-1 rounded-lg text-gray-500">{completedCount}/{totalCount}</span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-slate-100 rounded-full h-2.5 mb-6 overflow-hidden">
+                            <div 
+                                className="bg-success h-2.5 rounded-full transition-all duration-500 ease-out shadow-glow-green" 
+                                style={{ width: `${progressPercent}%` }}
+                            ></div>
+                        </div>
+
+                        {/* Student List Status */}
+                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Status Siswa</p>
+                            {students.map((student, idx) => {
+                                const isComplete = student.knowledge && student.skill;
+                                return (
+                                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isComplete ? 'bg-success shadow-glow-green' : 'bg-gray-300'}`}></div>
+                                            <span className={`text-sm font-medium truncate ${isComplete ? 'text-gray-800' : 'text-gray-400'}`}>
+                                                {student.name}
+                                            </span>
+                                        </div>
+                                        {isComplete ? (
+                                            <i className="fa-solid fa-circle-check text-success text-xs"></i>
+                                        ) : (
+                                            <span className="text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">Pending</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const InputTable = ({ students, setStudents }) => {
+            const handleInputChange = (index, field, value) => {
+                const updatedStudents = [...students];
+                updatedStudents[index][field] = value;
+                setStudents(updatedStudents);
+            };
+
+            return (
+                <div className="bg-white rounded-3xl shadow-premium overflow-hidden border border-gray-100 flex flex-col">
+                    <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50/50">
+                        <div>
+                            <h3 className="font-bold text-gray-800">Input Nilai - Matematika (XII-IPA 1)</h3>
+                            <p className="text-xs text-gray-500">Semester Ganjil 2023/2024</p>
+                        </div>
+                        <button className="bg-sma-grey hover:bg-sma-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2">
+                            <i className="fa-solid fa-floppy-disk"></i> Simpan Semua
+                        </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 text-xs font-bold text-sma-grey uppercase tracking-wider">
+                                    <th className="p-4 w-16 text-center">No</th>
+                                    <th className="p-4 w-24">NISN</th>
+                                    <th className="p-4">Nama Siswa</th>
+                                    <th className="p-4 w-32 text-center">KKM</th>
+                                    <th className="p-4 w-40 text-center">Nilai Pengetahuan</th>
+                                    <th className="p-4 w-40 text-center">Nilai Keterampilan</th>
+                                    <th className="p-4 w-48">Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50 text-sm">
+                                {students.map((student, idx) => (
+                                    <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+                                        <td className="p-4 text-center text-gray-400 font-medium">{idx + 1}</td>
+                                        <td className="p-4 text-gray-500 font-mono text-xs">{student.nisn}</td>
+                                        <td className="p-4 font-semibold text-gray-700">{student.name}</td>
+                                        <td className="p-4 text-center text-gray-400">75</td>
+                                        
+                                        {/* Input Pengetahuan */}
+                                        <td className="p-4 text-center">
+                                            <input 
+                                                type="number" 
+                                                min="0" max="100"
+                                                value={student.knowledge}
+                                                onChange={(e) => handleInputChange(idx, 'knowledge', e.target.value)}
+                                                className={`custom-input w-20 text-center bg-transparent border-b border-transparent focus:border-sma-grey focus:bg-white focus:shadow-sm rounded-t px-2 py-1 font-bold text-gray-700 outline-none transition-all ${student.knowledge >= 75 ? 'text-green-600' : 'text-gray-700'}`}
+                                                placeholder="-"
+                                            />
+                                        </td>
+
+                                        {/* Input Keterampilan */}
+                                        <td className="p-4 text-center">
+                                            <input 
+                                                type="number" 
+                                                min="0" max="100"
+                                                value={student.skill}
+                                                onChange={(e) => handleInputChange(idx, 'skill', e.target.value)}
+                                                className={`custom-input w-20 text-center bg-transparent border-b border-transparent focus:border-sma-grey focus:bg-white focus:shadow-sm rounded-t px-2 py-1 font-bold text-gray-700 outline-none transition-all ${student.skill >= 75 ? 'text-green-600' : 'text-gray-700'}`}
+                                                placeholder="-"
+                                            />
+                                        </td>
+
+                                        {/* Input Catatan */}
+                                        <td className="p-4">
+                                            <input 
+                                                type="text" 
+                                                value={student.note}
+                                                onChange={(e) => handleInputChange(idx, 'note', e.target.value)}
+                                                className="w-full bg-transparent border-b border-transparent hover:border-gray-200 focus:border-sma-grey focus:bg-white focus:shadow-sm rounded-t px-2 py-1 text-gray-500 text-xs outline-none transition-all placeholder-gray-300"
+                                                placeholder="Tulis catatan..."
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="p-4 bg-slate-50 border-t border-gray-100 text-xs text-gray-400 text-center">
+                        Data akan disimpan secara otomatis saat Anda menekan tombol "Simpan Semua".
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main Page ---
+        const TeacherInput = () => {
+            // Mock Data
+            const [students, setStudents] = useState([
+                { nisn: '001', name: 'Ahmad Dahlan', knowledge: '', skill: '', note: '' },
+                { nisn: '002', name: 'Budi Santoso', knowledge: '85', skill: '80', note: 'Perlu latihan soal cerita' },
+                { nisn: '003', name: 'Citra Kirana', knowledge: '', skill: '', note: '' },
+                { nisn: '004', name: 'Dewi Sartika', knowledge: '92', skill: '90', note: '' },
+                { nisn: '005', name: 'Eko Patrio', knowledge: '78', skill: '', note: 'Keterampilan kurang' },
+                { nisn: '006', name: 'Fanny Fadillah', knowledge: '', skill: '', note: '' },
+                { nisn: '007', name: 'Gilang Dirga', knowledge: '88', skill: '88', note: '' },
+                { nisn: '008', name: 'Hesti Purwadinata', knowledge: '95', skill: '92', note: 'Sangat baik' },
+                { nisn: '009', name: 'Indra Bekti', knowledge: '', skill: '', note: '' },
+                { nisn: '010', name: 'Joko Anwar', knowledge: '70', skill: '75', note: 'Remedial Pengetahuan' },
+            ]);
+
+            return (
+                <div className="bg-slate-bg min-h-screen flex">
+                    {/* Sidebar */}
+                    <div className="hidden lg:block w-72">
+                        <Sidebar isOpen={false} toggleSidebar={() => {}} />
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="mb-8 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800">Input Nilai Siswa</h2>
+                                    <p className="text-sm text-gray-500">Kelola nilai mata pelajaran Anda dengan mudah.</p>
+                                </div>
+                                <div className="hidden md:block">
+                                    <span className="text-xs font-bold text-success bg-success-light px-3 py-1 rounded-full border border-success">
+                                        <i className="fa-solid fa-wifi mr-1"></i> Tersinkronisasi
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col xl:flex-row gap-6">
+                                {/* Left Column: Upload & Spreadsheet */}
+                                <div className="flex-1 space-y-6">
+                                    <UploadSection />
+                                    <InputTable students={students} setStudents={setStudents} />
+                                </div>
+
+                                {/* Right Column: Progress Sidebar */}
+                                <div className="xl:w-80">
+                                    <ProgressSidebar students={students} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TeacherInput />);
+    </script>
+</body>
+</html>

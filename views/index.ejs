@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Rapor Digital Dashboard</title>
+    
+    <!-- Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM (via CDN) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        sma: {
+                            grey: '#8E9196',
+                            dark: '#6B6E72',
+                            light: '#B0B3B8'
+                        },
+                        slate: {
+                            bg: '#F8FAFC',
+                            card: '#FFFFFF'
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'soft': '0 4px 20px -2px rgba(0,0,0,0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F8FAFC;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .bento-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bento-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Mock Data ---
+        const STUDENT_NAME = "Rizky Pratama";
+        const TODAY_DATE = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+        // --- Components ---
+
+        // 1. Sidebar Component
+        const Sidebar = ({ isOpen, toggleSidebar }) => {
+            const [activeMenu, setActiveMenu] = useState(null);
+            const [activeSub, setActiveSub] = useState('Dashboard');
+
+            const toggleMenu = (menuName) => {
+                setActiveMenu(activeMenu === menuName ? null : menuName);
+            };
+
+            const menuItems = [
+                { 
+                    id: 'dashboard', 
+                    label: 'Dashboard', 
+                    icon: 'fa-grid-2', 
+                    subItems: [] 
+                },
+                { 
+                    id: 'rapor', 
+                    label: 'Rapor Digital', 
+                    icon: 'fa-book-open', 
+                    subItems: ['Lihat Nilai', 'Unduh Rapor'] 
+                },
+                { 
+                    id: 'career', 
+                    label: 'Career Builder', 
+                    icon: 'fa-briefcase', 
+                    subItems: ['Template CV', 'Portofolio'] 
+                },
+                { 
+                    id: 'academic', 
+                    label: 'Academic Info', 
+                    icon: 'fa-graduation-cap', 
+                    subItems: [] 
+                }
+            ];
+
+            return (
+                <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white shadow-premium transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+                    <div className="h-full flex flex-col p-6">
+                        {/* Logo Area */}
+                        <div className="flex items-center gap-3 mb-10">
+                            <div className="w-10 h-10 bg-sma-grey rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                                E
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold text-gray-800 leading-tight">E-Rapor</h1>
+                                <p className="text-xs text-sma-grey font-medium tracking-wider">DIGITAL SYSTEM</p>
+                            </div>
+                        </div>
+
+                        {/* Navigation */}
+                        <nav className="flex-1 space-y-2 overflow-y-auto">
+                            {menuItems.map((item) => (
+                                <div key={item.id}>
+                                    <button 
+                                        onClick={() => item.subItems.length > 0 ? toggleMenu(item.id) : setActiveSub(item.label)}
+                                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group
+                                            ${activeSub === item.label || (activeSub.includes(item.label) && !activeMenu) ? 'bg-sma-grey text-white shadow-md' : 'text-gray-500 hover:bg-slate-50 hover:text-sma-grey'}`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <i className={`fa-solid ${item.icon} w-5 text-center ${activeSub === item.label || (activeSub.includes(item.label) && !activeMenu) ? 'text-white' : 'text-sma-grey'}`}></i>
+                                            <span className="font-medium text-sm">{item.label}</span>
+                                        </div>
+                                        {item.subItems.length > 0 && (
+                                            <i className={`fa-solid fa-chevron-down text-xs transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180 text-white' : 'text-gray-400'}`}></i>
+                                        )}
+                                    </button>
+
+                                    {/* Submenu */}
+                                    {item.subItems.length > 0 && activeMenu === item.id && (
+                                        <div className="pl-14 pr-2 py-2 space-y-1 animate-fadeIn">
+                                            {item.subItems.map((sub) => (
+                                                <button 
+                                                    key={sub} 
+                                                    onClick={() => setActiveSub(sub)}
+                                                    className={`block w-full text-left py-2 text-sm rounded-lg transition-colors
+                                                        ${activeSub === sub ? 'text-sma-grey font-semibold bg-slate-100' : 'text-gray-400 hover:text-sma-grey'}`}
+                                                >
+                                                    {sub}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </nav>
+
+                        {/* User Profile Snippet (Sidebar Bottom) */}
+                        <div className="pt-6 border-t border-gray-100">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                <img src="https://picsum.photos/seed/studentUser/100/100" alt="Profile" className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-gray-800 truncate">{STUDENT_NAME}</p>
+                                    <p className="text-xs text-sma-grey">Siswa Kelas XII</p>
+                                </div>
+                                <i className="fa-solid fa-arrow-right-from-bracket text-gray-400 hover:text-red-500 cursor-pointer transition-colors" title="Logout"></i>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            );
+        };
+
+        // 2. Stats Card Component
+        const StatCard = ({ title, value, icon, color, trend }) => (
+            <div className="bento-card bg-white p-6 rounded-3xl shadow-soft flex items-center justify-between h-full">
+                <div>
+                    <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">{title}</p>
+                    <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
+                    {trend && <span className="text-xs font-medium text-green-500 mt-2 inline-flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full">
+                        <i className="fa-solid fa-arrow-trend-up"></i> {trend}
+                    </span>}
+                </div>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${color} bg-opacity-10`}>
+                    <i className={`fa-solid ${icon} ${color}`}></i>
+                </div>
+            </div>
+        );
+
+        // 3. Course Card Component
+        const CourseCard = ({ title, code, teacher, progress, color }) => (
+            <div className="bento-card bg-white p-6 rounded-3xl shadow-soft h-full flex flex-col justify-between">
+                <div>
+                    <div className="flex justify-between items-start mb-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${color} bg-opacity-10 text-white`}>
+                            <i className="fa-solid fa-book"></i>
+                        </div>
+                        <span className="text-xs font-bold text-gray-300 bg-gray-100 px-2 py-1 rounded-md">{code}</span>
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-800 mb-1">{title}</h4>
+                    <p className="text-sm text-gray-500 mb-4">Pengajar: {teacher}</p>
+                </div>
+                
+                <div>
+                    <div className="flex justify-between text-xs font-medium text-gray-400 mb-2">
+                        <span>Progress</span>
+                        <span>{progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
+                        <div className={`${color} h-2 rounded-full`} style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <button className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-sma-grey hover:border-sma-grey transition-all">
+                        Lihat Detail
+                    </button>
+                </div>
+            </div>
+        );
+
+        // 4. Main App Layout
+        const Dashboard = () => {
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+
+            return (
+                <div className="min-h-screen flex bg-slate-bg font-sans">
+                    {/* Mobile Overlay */}
+                    {sidebarOpen && (
+                        <div 
+                            className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden backdrop-blur-sm"
+                            onClick={() => setSidebarOpen(false)}
+                        ></div>
+                    )}
+
+                    <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+
+                    <div className="flex-1 flex flex-col h-screen overflow-hidden">
+                        {/* Top Header (Mobile) */}
+                        <header className="bg-white lg:bg-transparent p-4 lg:p-0 flex justify-between items-center lg:justify-end lg:pr-8 lg:pt-6">
+                            <button 
+                                onClick={() => setSidebarOpen(true)}
+                                className="lg:hidden text-gray-600 text-xl p-2 hover:bg-gray-100 rounded-lg"
+                            >
+                                <i className="fa-solid fa-bars"></i>
+                            </button>
+                            <div className="flex items-center gap-4">
+                                <button className="w-10 h-10 rounded-full bg-white shadow-soft flex items-center justify-center text-gray-500 hover:text-sma-grey relative">
+                                    <i className="fa-regular fa-bell"></i>
+                                    <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                                </button>
+                            </div>
+                        </header>
+
+                        {/* Main Content Scrollable Area */}
+                        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+                            {/* Bento Grid Layout */}
+                            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[minmax(180px,auto)]">
+                                
+                                {/* 1. Welcome Banner (Spans 3 cols on large screens) */}
+                                <div className="lg:col-span-3 bg-gradient-to-r from-sma-grey to-slate-600 rounded-3xl shadow-premium p-8 relative overflow-hidden text-white flex flex-col justify-center items-start">
+                                    {/* Decorative Circles */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                                    <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-blue-300 opacity-10 rounded-full blur-xl"></div>
+                                    
+                                    <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between w-full">
+                                        <div className="md:w-2/3">
+                                            <p className="text-slate-200 mb-1 font-medium">{TODAY_DATE}</p>
+                                            <h2 className="text-3xl md:text-4xl font-bold mb-2 leading-tight">
+                                                Selamat Datang, <br/>
+                                                <span className="text-white drop-shadow-sm">{STUDENT_NAME}!</span>
+                                            </h2>
+                                            <p className="text-sm text-slate-300 max-w-md mt-2">Semangat belajar hari ini! Jangan lupa cek jadwal dan tugas terbaru kamu di portal ini.</p>
+                                            
+                                            <button className="mt-6 px-6 py-3 bg-white text-sma-grey rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors shadow-lg">
+                                                Mulai Belajar
+                                            </button>
+                                        </div>
+                                        
+                                        {/* 3D Illustration Placeholder */}
+                                        <div className="md:w-1/3 flex justify-center md:justify-end mt-6 md:mt-0">
+                                            <img 
+                                                src="https://img.freepik.com/free-vector/teen-student-with-laptop-studying-online-course-concept_1150-40633.jpg?w=500&q=80" 
+                                                alt="Student Illustration" 
+                                                className="w-48 md:w-64 drop-shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 2. Announcements (Vertical Card) */}
+                                <div className="lg:row-span-2 bg-white rounded-3xl shadow-soft p-6 flex flex-col">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-bold text-gray-800">Pengumuman Sekolah</h3>
+                                        <button className="text-sma-grey text-xs hover:underline">Lihat Semua</button>
+                                    </div>
+                                    
+                                    <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                                        {/* Announcement Item 1 */}
+                                        <div className="flex gap-3 pb-4 border-b border-gray-50">
+                                            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                                                <div className="text-center leading-tight">
+                                                    <div>OKT</div>
+                                                    <div className="text-lg">24</div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-bold text-gray-800 leading-snug mb-1">Ujian Tengah Semester</h4>
+                                                <p className="text-xs text-gray-500 line-clamp-2">Jadwal UTS akan dimulai pada tanggal 1 November. Harap persiapkan diri.</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Announcement Item 2 */}
+                                        <div className="flex gap-3 pb-4 border-b border-gray-50">
+                                            <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-500 flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                                                <div className="text-center leading-tight">
+                                                    <div>OKT</div>
+                                                    <div className="text-lg">20</div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-bold text-gray-800 leading-snug mb-1">Lomba Kebersihan Kelas</h4>
+                                                <p className="text-xs text-gray-500 line-clamp-2">Dalam rangka bulan bahasa, diadakan lomba dekorasi kelas.</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Announcement Item 3 */}
+                                        <div className="flex gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-500 flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                                                <div className="text-center leading-tight">
+                                                    <div>OKT</div>
+                                                    <div className="text-lg">15</div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-bold text-gray-800 leading-snug mb-1">Libur Nasional</h4>
+                                                <p className="text-xs text-gray-500 line-clamp-2">Sekolah libur memperingati hari besar nasional.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 3. Stats Cards (Row of 3) */}
+                                <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                    <StatCard 
+                                        title="IPK Semester" 
+                                        value="3.85" 
+                                        icon="fa-graduation-cap" 
+                                        color="text-blue-500" 
+                                        trend="+0.2 dari sem lalu" 
+                                    />
+                                    <StatCard 
+                                        title="Peringkat Kelas" 
+                                        value="#5" 
+                                        icon="fa-trophy" 
+                                        color="text-yellow-500" 
+                                    />
+                                    <StatCard 
+                                        title="Kehadiran" 
+                                        value="98%" 
+                                        icon="fa-clock" 
+                                        color="text-green-500" 
+                                    />
+                                </div>
+
+                                {/* 4. Enrolled Courses (Grid of 2) */}
+                                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <CourseCard 
+                                        title="Matematika Lanjut" 
+                                        code="MAT-12-01" 
+                                        teacher="Bpk. Budi Santoso" 
+                                        progress={75} 
+                                        color="bg-blue-500" 
+                                    />
+                                    <CourseCard 
+                                        title="Fisika Dasar" 
+                                        code="FIS-12-03" 
+                                        teacher="Ibu Siti Aminah" 
+                                        progress={45} 
+                                        color="bg-orange-500" 
+                                    />
+                                </div>
+
+                                {/* Footer inside grid (optional spacer) */}
+                                <div className="hidden lg:block lg:col-span-4 text-center py-4">
+                                    <p className="text-xs text-gray-400">© 2023 E-Rapor Digital SMA. All rights reserved.</p>
+                                </div>
+
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Dashboard />);
+    </script>
+</body>
+</html>
