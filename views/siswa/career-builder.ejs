@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <%- include('../partials/head') %>
+  <style>
+    .a4-paper {
+      width: 100%;
+      max-width: 210mm;
+      min-height: 297mm;
+      background: white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      margin: 0 auto;
+      padding: 30px;
+      font-size: 12px;
+      color: #333;
+    }
+    .template-card { transition: all 0.3s ease; }
+    .template-card.selected { border-color: #8E9196; background-color: #F8FAFC; }
+    .template-card.selected .template-icon { background-color: #8E9196; color: white; }
+  </style>
+</head>
+<body class="min-h-screen flex bg-slate-bg font-sans">
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-100 p-4 lg:px-8 lg:py-4 flex justify-between items-center shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 text-xl p-2 hover:bg-gray-100 rounded-lg">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Career Builder</h2>
+          <p class="text-xs text-gray-500">Buat CV profesional dari data akademik Anda.</p>
+        </div>
+      </div>
+      <form action="/siswa/career-builder/save" method="POST" class="flex gap-3">
+        <input type="hidden" name="template" id="hiddenTemplate" value="<%= typeof cvData !== 'undefined' && cvData ? cvData.template : 'modern' %>">
+        <input type="hidden" name="target_pekerjaan" id="hiddenRole">
+        <input type="hidden" name="tentang_saya" id="hiddenAbout">
+        <input type="hidden" name="pengalaman_judul" id="hiddenExpTitle">
+        <input type="hidden" name="pengalaman_desc" id="hiddenExpDesc">
+        <button type="submit" onclick="syncFormData()" class="bg-white border border-sma-grey text-sma-grey hover:bg-sma-grey hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> Simpan
+        </button>
+        <a href="/api/cv/generate" class="bg-sma-grey hover:bg-sma-dark text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2">
+          <i class="fa-solid fa-download"></i> Generate CV
+        </a>
+      </form>
+    </header>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto p-4 lg:p-8">
+      <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Skill Mapping + Template Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Skill Mapping Card -->
+          <div class="lg:col-span-2 bg-white rounded-3xl shadow-soft p-6 border border-gray-100 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+              <i class="fa-solid fa-wand-magic-sparkles text-6xl text-sma-grey"></i>
+            </div>
+
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-link"></i>
+              </div>
+              <span class="text-xs font-bold text-green-600 uppercase tracking-wide">Data Terintegrasi</span>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Skill Mapping Otomatis</h3>
+            <p class="text-sm text-gray-500 mb-4 max-w-md">Keahlian di bawah ini disarankan berdasarkan nilai akademik tertinggi Anda.</p>
+
+            <div class="flex flex-wrap gap-2">
+              <% if (typeof topSkills !== 'undefined' && topSkills.length > 0) { %>
+                <% topSkills.forEach(function(skill) { %>
+                <span class="px-3 py-1.5 bg-slate-50 text-sma-grey text-xs font-semibold rounded-lg border border-slate-200 flex items-center gap-2">
+                  <i class="fa-solid fa-check-circle text-green-500"></i> <%= skill %>
+                </span>
+                <% }); %>
+              <% } else { %>
+                <span class="px-3 py-1.5 bg-slate-50 text-gray-400 text-xs rounded-lg border border-slate-200">Belum ada data nilai</span>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Template Gallery -->
+          <div class="bg-white rounded-3xl shadow-soft p-6 border border-gray-100">
+            <h3 class="text-sm font-bold text-gray-800 mb-4 uppercase tracking-wider">Pilih Template</h3>
+            <div class="flex flex-col gap-3">
+              <%
+                var templates = [
+                  { id: 'ats', name: 'ATS Friendly', icon: 'fa-list-check', desc: 'Minimalis & Bersih' },
+                  { id: 'creative', name: 'Creative', icon: 'fa-palette', desc: 'Berwarna & Modern' },
+                  { id: 'modern', name: 'Modern Pro', icon: 'fa-layer-group', desc: 'Layout Grid' }
+                ];
+                var currentTemplate = typeof cvData !== 'undefined' && cvData ? cvData.template : 'modern';
+              %>
+              <% templates.forEach(function(t) { %>
+              <button type="button" onclick="selectTemplate('<%= t.id %>')"
+                      class="template-card flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left
+                      <%= currentTemplate === t.id ? 'selected border-sma-grey bg-slate-50' : 'border-gray-100 hover:border-sma-light bg-white' %>"
+                      data-template="<%= t.id %>">
+                <div class="template-icon w-10 h-10 rounded-xl flex items-center justify-center text-lg
+                     <%= currentTemplate === t.id ? 'bg-sma-grey text-white' : 'bg-slate-100 text-sma-grey' %>">
+                  <i class="fa-solid <%= t.icon %>"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-sm text-gray-800"><%= t.name %></p>
+                  <p class="text-[10px] text-gray-400"><%= t.desc %></p>
+                </div>
+              </button>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor + Live Preview -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+
+          <!-- Editor Forms -->
+          <div class="xl:col-span-4 flex flex-col gap-6">
+            <!-- Personal Info -->
+            <div class="bg-white rounded-3xl shadow-soft p-6 border border-gray-100">
+              <div class="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                <i class="fa-solid fa-user text-sma-grey"></i>
+                <h3 class="font-bold text-gray-800">Informasi Pribadi</h3>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <label class="text-xs font-semibold text-gray-500 mb-1 block">Nama Lengkap</label>
+                  <input type="text" id="cvFullName" value="<%= user.nama_lengkap %>" readonly
+                         class="w-full bg-slate-100 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-gray-500 mb-1 block">Target Pekerjaan</label>
+                  <input type="text" id="cvRole" oninput="updatePreview()"
+                         value="<%= typeof cvData !== 'undefined' && cvData ? cvData.target_pekerjaan : '' %>"
+                         placeholder="Contoh: Data Scientist"
+                         class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey focus:ring-1 focus:ring-sma-grey">
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-gray-500 mb-1 block">Tentang Saya</label>
+                  <textarea id="cvAbout" rows="3" oninput="updatePreview()"
+                            placeholder="Ceritakan tentang diri Anda..."
+                            class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey resize-none"><%= typeof cvData !== 'undefined' && cvData ? cvData.tentang_saya : '' %></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Experience -->
+            <div class="bg-white rounded-3xl shadow-soft p-6 border border-gray-100">
+              <div class="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                <i class="fa-solid fa-briefcase text-sma-grey"></i>
+                <h3 class="font-bold text-gray-800">Pengalaman & Proyek</h3>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <label class="text-xs font-semibold text-gray-500 mb-1 block">Judul Posisi/Proyek</label>
+                  <input type="text" id="cvExpTitle" oninput="updatePreview()"
+                         value="<%= typeof cvData !== 'undefined' && cvData ? cvData.pengalaman_judul : '' %>"
+                         placeholder="Contoh: Ketua OSIS"
+                         class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey">
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-gray-500 mb-1 block">Deskripsi</label>
+                  <textarea id="cvExpDesc" rows="3" oninput="updatePreview()"
+                            placeholder="Deskripsikan pengalaman Anda..."
+                            class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey resize-none"><%= typeof cvData !== 'undefined' && cvData ? cvData.pengalaman_desc : '' %></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="xl:col-span-8 min-h-[600px]">
+            <div class="bg-gray-200 p-4 rounded-3xl overflow-auto h-full flex justify-center items-start">
+              <div id="cvPreview" class="a4-paper transform scale-90 origin-top rounded-xl">
+                <!-- CV content rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var currentTemplate = '<%= typeof cvData !== "undefined" && cvData ? cvData.template : "modern" %>';
+    var userName = '<%= user.nama_lengkap %>';
+    var userEmail = '<%= user.email || "" %>';
+    var topSkillsData = [<% if (typeof topSkills !== 'undefined') { topSkills.forEach(function(s, i) { %>'<%= s %>'<%= i < topSkills.length - 1 ? ',' : '' %><% }); } %>];
+
+    function selectTemplate(id) {
+      currentTemplate = id;
+      document.getElementById('hiddenTemplate').value = id;
+      document.querySelectorAll('.template-card').forEach(function(c) {
+        c.classList.remove('selected');
+        c.querySelector('.template-icon').classList.remove('bg-sma-grey', 'text-white');
+        c.querySelector('.template-icon').classList.add('bg-slate-100', 'text-sma-grey');
+      });
+      var selected = document.querySelector('[data-template="' + id + '"]');
+      if (selected) {
+        selected.classList.add('selected');
+        selected.querySelector('.template-icon').classList.remove('bg-slate-100', 'text-sma-grey');
+        selected.querySelector('.template-icon').classList.add('bg-sma-grey', 'text-white');
+      }
+      updatePreview();
+    }
+
+    function syncFormData() {
+      document.getElementById('hiddenRole').value = document.getElementById('cvRole').value;
+      document.getElementById('hiddenAbout').value = document.getElementById('cvAbout').value;
+      document.getElementById('hiddenExpTitle').value = document.getElementById('cvExpTitle').value;
+      document.getElementById('hiddenExpDesc').value = document.getElementById('cvExpDesc').value;
+    }
+
+    function updatePreview() {
+      var fullName = document.getElementById('cvFullName').value || 'Nama Lengkap';
+      var role = document.getElementById('cvRole').value || 'Calon Professional';
+      var about = document.getElementById('cvAbout').value || 'Deskripsi singkat tentang diri Anda akan muncul di sini.';
+      var expTitle = document.getElementById('cvExpTitle').value || 'Pengalaman';
+      var expDesc = document.getElementById('cvExpDesc').value || 'Deskripsi pengalaman Anda.';
+
+      var skillsHtml = topSkillsData.map(function(s) {
+        return '<li class="mb-1">' + s.split('(')[0].trim() + '</li>';
+      }).join('');
+
+      var skillBadges = topSkillsData.map(function(s) {
+        return '<span style="display:inline-block;background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:10px;margin:2px;">' + s.split('(')[0].trim() + '</span>';
+      }).join('');
+
+      var html = '';
+
+      if (currentTemplate === 'creative') {
+        html = '<div style="background:#8E9196;color:white;padding:24px;border-radius:12px;margin-bottom:20px;">' +
+          '<h1 style="font-size:24px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">' + fullName + '</h1>' +
+          '<p style="color:#e2e8f0;margin-top:4px;">' + role + '</p>' +
+          '<div style="display:flex;gap:16px;margin-top:12px;font-size:10px;color:#cbd5e1;">' +
+            '<span><i class="fa-solid fa-envelope"></i> ' + userEmail + '</span>' +
+          '</div></div>' +
+          '<div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;">' +
+            '<div><h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Skills</h4>' +
+            '<ul style="list-style:disc;padding-left:16px;font-size:11px;color:#6b7280;">' + skillsHtml + '</ul>' +
+            '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;margin-top:16px;font-size:11px;text-transform:uppercase;">Pendidikan</h4>' +
+            '<p style="font-weight:bold;font-size:11px;">SMA Harapan Bangsa</p><p style="font-size:10px;color:#9ca3af;">2021 - Sekarang</p></div>' +
+            '<div><h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Tentang Saya</h4>' +
+            '<p style="font-size:11px;color:#6b7280;text-align:justify;line-height:1.6;">' + about + '</p>' +
+            '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;margin-top:16px;font-size:11px;text-transform:uppercase;">Pengalaman</h4>' +
+            '<h5 style="font-weight:bold;font-size:11px;">' + expTitle + '</h5>' +
+            '<p style="font-size:10px;color:#8E9196;margin-bottom:4px;">SMA Harapan Bangsa</p>' +
+            '<p style="font-size:11px;color:#6b7280;text-align:justify;">' + expDesc + '</p></div></div>';
+      } else if (currentTemplate === 'modern') {
+        html = '<div style="border-bottom:2px solid #8E9196;padding-bottom:12px;margin-bottom:16px;">' +
+          '<h1 style="font-size:22px;font-weight:bold;color:#1f2937;text-transform:uppercase;letter-spacing:1px;">' + fullName + '</h1>' +
+          '<p style="color:#8E9196;font-weight:500;">' + role + '</p>' +
+          '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#9ca3af;">' +
+            '<span><i class="fa-solid fa-envelope"></i> ' + userEmail + '</span></div></div>' +
+          '<div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;">' +
+            '<div><h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Skills</h4>' +
+            '<ul style="list-style:disc;padding-left:16px;font-size:11px;color:#6b7280;">' + skillsHtml + '</ul>' +
+            '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;margin-top:16px;font-size:11px;text-transform:uppercase;">Pendidikan</h4>' +
+            '<p style="font-weight:bold;font-size:11px;">SMA Harapan Bangsa</p><p style="font-size:10px;color:#9ca3af;">2021 - Sekarang</p></div>' +
+            '<div><h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Tentang Saya</h4>' +
+            '<p style="font-size:11px;color:#6b7280;text-align:justify;line-height:1.6;">' + about + '</p>' +
+            '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;margin-top:16px;font-size:11px;text-transform:uppercase;">Pengalaman</h4>' +
+            '<h5 style="font-weight:bold;font-size:11px;">' + expTitle + '</h5>' +
+            '<p style="font-size:10px;color:#8E9196;margin-bottom:4px;">SMA Harapan Bangsa</p>' +
+            '<p style="font-size:11px;color:#6b7280;text-align:justify;">' + expDesc + '</p></div></div>';
+      } else {
+        html = '<div style="margin-bottom:12px;border-bottom:2px solid #8E9196;padding-bottom:12px;">' +
+          '<h1 style="font-size:22px;font-weight:bold;color:#1f2937;text-transform:uppercase;">' + fullName + '</h1>' +
+          '<p style="color:#8E9196;font-weight:500;">' + role + '</p>' +
+          '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#9ca3af;">' +
+            '<span><i class="fa-solid fa-envelope"></i> ' + userEmail + '</span></div></div>' +
+          '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Tentang Saya</h4>' +
+          '<p style="font-size:11px;color:#6b7280;text-align:justify;line-height:1.6;margin-bottom:16px;">' + about + '</p>' +
+          '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Pengalaman</h4>' +
+          '<div style="margin-bottom:16px;"><h5 style="font-weight:bold;font-size:11px;">' + expTitle + '</h5>' +
+          '<p style="font-size:10px;color:#8E9196;">SMA Harapan Bangsa</p>' +
+          '<p style="font-size:11px;color:#6b7280;text-align:justify;">' + expDesc + '</p></div>' +
+          '<h4 style="font-weight:bold;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;font-size:11px;text-transform:uppercase;">Keahlian</h4>' +
+          '<div>' + skillBadges + '</div>';
+      }
+
+      html += '<div style="position:absolute;bottom:16px;left:0;width:100%;text-align:center;font-size:8px;color:#d1d5db;">Generated by E-Rapor Career Builder</div>';
+      document.getElementById('cvPreview').innerHTML = html;
+    }
+
+    // Initial render
+    updatePreview();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body class="min-h-screen flex bg-slate-bg font-sans">
+
+  <%- include('../partials/sidebar') %>
+
+  <div class="flex-1 p-4 lg:p-8 overflow-y-auto">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Header -->
+      <div class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 text-xl p-2 hover:bg-gray-100 rounded-lg">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-800">Input Nilai Siswa</h2>
+            <p class="text-sm text-gray-500">Kelola nilai mata pelajaran Anda dengan mudah.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold text-success bg-success-light px-3 py-1 rounded-full border border-success">
+            <i class="fa-solid fa-wifi mr-1"></i> Tersinkronisasi
+          </span>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white rounded-3xl shadow-soft p-6 mb-6 border border-gray-100">
+        <form action="/guru/input-nilai" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Kelas</label>
+            <select name="kelas_id" class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey">
+              <% if (typeof kelasList !== 'undefined') { kelasList.forEach(function(k) { %>
+                <option value="<%= k.id %>" <%= typeof selectedKelas !== 'undefined' && selectedKelas == k.id ? 'selected' : '' %>><%= k.nama_kelas %></option>
+              <% }); } %>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Mata Pelajaran</label>
+            <select name="mapel_id" class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey">
+              <% if (typeof mapelList !== 'undefined') { mapelList.forEach(function(m) { %>
+                <option value="<%= m.id %>" <%= typeof selectedMapel !== 'undefined' && selectedMapel == m.id ? 'selected' : '' %>><%= m.nama %></option>
+              <% }); } %>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Semester</label>
+            <select name="semester" class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sma-grey">
+              <option value="Ganjil">Ganjil</option>
+              <option value="Genap">Genap</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-sma-grey hover:bg-sma-dark text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2">
+            <i class="fa-solid fa-filter"></i> Filter
+          </button>
+        </form>
+      </div>
+
+      <div class="flex flex-col xl:flex-row gap-6">
+        <!-- Left: Upload & Table -->
+        <div class="flex-1 space-y-6">
+
+          <!-- Upload Section -->
+          <div class="bg-white rounded-3xl shadow-soft p-8 border border-gray-100">
+            <div class="flex flex-col lg:flex-row gap-6 items-center justify-between">
+              <form action="/guru/upload-nilai" method="POST" enctype="multipart/form-data" class="flex-1 w-full">
+                <input type="hidden" name="kelas_id" value="<%= typeof selectedKelas !== 'undefined' ? selectedKelas : 1 %>">
+                <input type="hidden" name="mapel_id" value="<%= typeof selectedMapel !== 'undefined' ? selectedMapel : 1 %>">
+                <div class="border-2 border-dashed border-gray-200 hover:border-sma-grey rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer relative"
+                     onclick="this.querySelector('input[type=file]').click()">
+                  <input type="file" name="excelFile" accept=".xlsx,.xls" class="hidden" onchange="this.closest('form').submit()">
+                  <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-sma-grey text-2xl mb-4">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-800">Upload File Nilai</h3>
+                  <p class="text-sm text-gray-500 mt-2">Seret & Lepas file Excel di sini, atau klik untuk mencari.</p>
+                  <p class="text-xs text-gray-400 mt-1">Format .xlsx, Maks. 5MB</p>
+                </div>
+              </form>
+
+              <div class="w-full lg:w-auto flex flex-col items-center gap-2">
+                <a href="/api/template/download?kelas_id=<%= typeof selectedKelas !== 'undefined' ? selectedKelas : 1 %>&mapel_id=<%= typeof selectedMapel !== 'undefined' ? selectedMapel : 1 %>"
+                   class="group flex items-center gap-3 px-6 py-4 bg-green-50 hover:bg-green-100 border border-green-200 rounded-2xl transition-all w-full lg:w-auto">
+                  <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-file-excel"></i>
+                  </div>
+                  <div class="text-left">
+                    <p class="text-sm font-bold text-green-800">Download Template</p>
+                    <p class="text-xs text-green-600">Format .xlsx</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success/Error Message -->
+          <% if (typeof message !== 'undefined' && message) { %>
+          <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> <%= message %>
+          </div>
+          <% } %>
+          <% if (typeof errorMsg !== 'undefined' && errorMsg) { %>
+          <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation"></i> <%= errorMsg %>
+          </div>
+          <% } %>
+
+          <!-- Input Table -->
+          <div class="bg-white rounded-3xl shadow-premium overflow-hidden border border-gray-100">
+            <form action="/guru/save-nilai" method="POST">
+              <input type="hidden" name="mapel_id" value="<%= typeof selectedMapel !== 'undefined' ? selectedMapel : 1 %>">
+              <input type="hidden" name="semester" value="Ganjil">
+              <input type="hidden" name="tahun_ajaran" value="2024/2025">
+
+              <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                  <h3 class="font-bold text-gray-800">Input Nilai</h3>
+                  <p class="text-xs text-gray-500">Semester Ganjil 2024/2025</p>
+                </div>
+                <button type="submit" class="bg-sma-grey hover:bg-sma-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2">
+                  <i class="fa-solid fa-floppy-disk"></i> Simpan Semua
+                </button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 text-xs font-bold text-sma-grey uppercase tracking-wider">
+                      <th class="p-4 w-16 text-center">No</th>
+                      <th class="p-4 w-24">NISN</th>
+                      <th class="p-4">Nama Siswa</th>
+                      <th class="p-4 w-32 text-center">KKM</th>
+                      <th class="p-4 w-40 text-center">Nilai Pengetahuan</th>
+                      <th class="p-4 w-40 text-center">Nilai Keterampilan</th>
+                      <th class="p-4 w-48">Catatan</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-50 text-sm">
+                    <% if (typeof students !== 'undefined' && students.length > 0) { %>
+                      <% students.forEach(function(s, idx) { %>
+                      <tr class="group hover:bg-slate-50/50 transition-colors">
+                        <td class="p-4 text-center text-gray-400 font-medium"><%= idx + 1 %></td>
+                        <td class="p-4 text-gray-500 font-mono text-xs"><%= s.nisn %></td>
+                        <td class="p-4 font-semibold text-gray-700"><%= s.nama_lengkap %></td>
+                        <td class="p-4 text-center text-gray-400"><%= typeof selectedMapelKkm !== 'undefined' ? selectedMapelKkm : 75 %></td>
+                        <td class="p-4 text-center">
+                          <input type="hidden" name="siswa_ids[]" value="<%= s.user_id %>">
+                          <input type="number" name="pengetahuan[]" min="0" max="100"
+                                 value="<%= s.nilai_pengetahuan || '' %>"
+                                 class="custom-input w-20 text-center bg-transparent border-b border-transparent focus:border-sma-grey focus:bg-white focus:shadow-sm rounded-t px-2 py-1 font-bold text-gray-700 outline-none transition-all"
+                                 placeholder="-">
+                        </td>
+                        <td class="p-4 text-center">
+                          <input type="number" name="keterampilan[]" min="0" max="100"
+                                 value="<%= s.nilai_keterampilan || '' %>"
+                                 class="custom-input w-20 text-center bg-transparent border-b border-transparent focus:border-sma-grey focus:bg-white focus:shadow-sm rounded-t px-2 py-1 font-bold text-gray-700 outline-none transition-all"
+                                 placeholder="-">
+                        </td>
+                        <td class="p-4">
+                          <input type="text" name="catatan[]"
+                                 value="<%= s.catatan || '' %>"
+                                 class="w-full bg-transparent border-b border-transparent hover:border-gray-200 focus:border-sma-grey focus:bg-white focus:shadow-sm rounded-t px-2 py-1 text-gray-500 text-xs outline-none transition-all placeholder-gray-300"
+                                 placeholder="Tulis catatan...">
+                        </td>
+                      </tr>
+                      <% }); %>
+                    <% } else { %>
+                      <tr>
+                        <td colspan="7" class="py-12 text-center text-gray-400">
+                          <i class="fa-solid fa-inbox text-3xl mb-3 block"></i>
+                          Belum ada data siswa. Pilih kelas dan mata pelajaran terlebih dahulu.
+                        </td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="p-4 bg-slate-50 border-t border-gray-100 text-xs text-gray-400 text-center">
+                Data akan disimpan saat Anda menekan tombol "Simpan Semua".
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Progress Sidebar -->
+        <% if (typeof students !== 'undefined' && students.length > 0) { %>
+        <div class="xl:w-80 flex-shrink-0">
+          <div class="bg-white rounded-3xl shadow-premium p-6 sticky top-6 border border-gray-100">
+            <%
+              var completedCount = students.filter(function(s) { return s.nilai_pengetahuan && s.nilai_keterampilan; }).length;
+              var totalCount = students.length;
+              var progressPercent = Math.round((completedCount / totalCount) * 100);
+            %>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-800">Progress Input</h3>
+              <span class="text-xs font-bold bg-slate-100 px-2 py-1 rounded-lg text-gray-500"><%= completedCount %>/<%= totalCount %></span>
+            </div>
+
+            <div class="w-full bg-slate-100 rounded-full h-2.5 mb-6 overflow-hidden">
+              <div class="bg-success h-2.5 rounded-full transition-all duration-500 ease-out" style="width: <%= progressPercent %>%"></div>
+            </div>
+
+            <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Status Siswa</p>
+              <% students.forEach(function(s) {
+                var isComplete = s.nilai_pengetahuan && s.nilai_keterampilan;
+              %>
+              <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                <div class="flex items-center gap-3 overflow-hidden">
+                  <div class="w-2 h-2 rounded-full flex-shrink-0 <%= isComplete ? 'bg-success' : 'bg-gray-300' %>"></div>
+                  <span class="text-sm font-medium truncate <%= isComplete ? 'text-gray-800' : 'text-gray-400' %>"><%= s.nama_lengkap %></span>
+                </div>
+                <% if (isComplete) { %>
+                  <i class="fa-solid fa-circle-check text-success text-xs"></i>
+                <% } else { %>
+                  <span class="text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">Pending</span>
+                <% } %>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+        <% } %>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

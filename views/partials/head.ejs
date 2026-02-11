@@ -1,0 +1,106 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>E-Rapor Digital</title>
+
+<!-- Fonts: Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Icons: FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- AOS Animation Library -->
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<!-- Tailwind Config -->
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Poppins', 'sans-serif'],
+        },
+        colors: {
+          sma: {
+            grey: '#8E9196',
+            dark: '#6B6E72',
+            light: '#B0B3B8'
+          },
+          slate: {
+            bg: '#F8FAFC',
+            card: '#FFFFFF'
+          },
+          success: {
+            DEFAULT: '#10B981',
+            light: '#D1FAE5',
+            dark: '#047857'
+          }
+        },
+        boxShadow: {
+          'premium': '0 20px 40px -10px rgba(0,0,0,0.08)',
+          'soft': '0 4px 20px -2px rgba(0,0,0,0.05)',
+          'glow': '0 0 20px rgba(142, 145, 150, 0.3)',
+          'glow-green': '0 0 15px rgba(16, 185, 129, 0.2)'
+        },
+        borderRadius: {
+          'bento': '24px',
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  body {
+    background-color: #F8FAFC;
+    font-family: 'Poppins', sans-serif;
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #8E9196 0%, #4B5563 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .bento-card {
+    transition: all 0.3s ease;
+  }
+  .bento-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+  }
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hide-scroll::-webkit-scrollbar { display: none; }
+  .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  .custom-input::-webkit-outer-spin-button,
+  .custom-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .custom-input[type=number] { -moz-appearance: textfield; }
+  .hero-bg-shape {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(142,145,150,0.1) 0%, rgba(248,250,252,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+  }
+  .sidebar-link.active {
+    background-color: #8E9196;
+    color: white;
+  }
+  .sidebar-link.active i { color: white; }
+</style>

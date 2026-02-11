@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="min-h-screen bg-slate-bg font-sans">
+
+  <%- include('partials/navbar') %>
+
+  <div class="pt-28 pb-20 px-6">
+    <div class="max-w-2xl mx-auto">
+
+      <!-- Header -->
+      <div class="text-center mb-10" data-aos="fade-up">
+        <div class="w-20 h-20 bg-sma-grey/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <i class="fa-solid fa-shield-halved text-3xl text-sma-grey"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Verifikasi Dokumen</h1>
+        <p class="text-gray-500 max-w-lg mx-auto">Masukkan kode verifikasi yang tertera pada dokumen rapor atau CV untuk memastikan keaslian dokumen.</p>
+      </div>
+
+      <!-- Search Card -->
+      <div class="bg-white rounded-3xl shadow-premium p-8 border border-gray-100 mb-8" data-aos="fade-up" data-aos-delay="100">
+        <form action="/verification" method="GET" class="flex flex-col sm:flex-row gap-4">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-qrcode absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" name="token" placeholder="Masukkan kode verifikasi dokumen..."
+                   value="<%= typeof token !== 'undefined' ? token : '' %>"
+                   class="w-full bg-slate-50 border border-gray-200 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-sma-grey focus:ring-2 focus:ring-sma-grey/20 transition-all" required>
+          </div>
+          <button type="submit" class="bg-sma-grey hover:bg-sma-dark text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+            <i class="fa-solid fa-magnifying-glass"></i> Verifikasi
+          </button>
+        </form>
+      </div>
+
+      <!-- Result -->
+      <% if (typeof result !== 'undefined' && result) { %>
+        <div class="bg-white rounded-3xl shadow-premium p-8 border border-gray-100" data-aos="fade-up">
+          <% if (result.valid) { %>
+            <!-- Valid Document -->
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+              </div>
+              <h3 class="text-xl font-bold text-green-700">Dokumen Terverifikasi</h3>
+              <p class="text-sm text-gray-500 mt-1">Dokumen ini asli dan dikeluarkan oleh sistem E-Rapor.</p>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-6 space-y-3 border border-slate-200">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Tipe Dokumen</span>
+                <span class="font-bold text-gray-800 capitalize"><%= result.tipe %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Nama Siswa</span>
+                <span class="font-bold text-gray-800"><%= result.nama_siswa %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Tanggal Terbit</span>
+                <span class="font-bold text-gray-800"><%= new Date(result.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Kode Verifikasi</span>
+                <span class="font-mono text-xs text-sma-grey bg-white px-2 py-1 rounded border"><%= result.verification_token %></span>
+              </div>
+            </div>
+          <% } else { %>
+            <!-- Invalid Document -->
+            <div class="text-center">
+              <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-circle-xmark text-3xl text-red-600"></i>
+              </div>
+              <h3 class="text-xl font-bold text-red-700">Dokumen Tidak Ditemukan</h3>
+              <p class="text-sm text-gray-500 mt-2">Kode verifikasi yang Anda masukkan tidak cocok dengan dokumen manapun di sistem kami. Pastikan kode sudah benar.</p>
+            </div>
+          <% } %>
+        </div>
+      <% } %>
+
+      <!-- Info -->
+      <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-soft flex items-start gap-4">
+          <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 flex-shrink-0">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-gray-800 mb-1">Scan QR Code</h4>
+            <p class="text-xs text-gray-500 leading-relaxed">Setiap dokumen memiliki QR Code unik yang dapat di-scan untuk verifikasi cepat.</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-soft flex items-start gap-4">
+          <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-500 flex-shrink-0">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-gray-800 mb-1">Keamanan Data</h4>
+            <p class="text-xs text-gray-500 leading-relaxed">Data terenkripsi dan tersimpan aman di server sekolah untuk mencegah pemalsuan.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+</body>
+</html>

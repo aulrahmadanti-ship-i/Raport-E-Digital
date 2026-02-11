@@ -1,0 +1,125 @@
+<%
+  // Determine menu items based on role
+  var menuItems = [];
+  var portalLabel = 'DIGITAL SYSTEM';
+
+  if (user && user.role === 'siswa') {
+    portalLabel = 'STUDENT PORTAL';
+    menuItems = [
+      { id: 'dashboard', label: 'Dashboard', icon: 'fa-grid-2', href: '/siswa/dashboard', subItems: [] },
+      { id: 'rapor', label: 'Rapor Digital', icon: 'fa-book-open', href: '#', subItems: [
+        { label: 'Lihat Nilai', href: '/siswa/rapor' },
+        { label: 'Unduh Rapor', href: '/siswa/rapor?download=1' }
+      ]},
+      { id: 'career', label: 'Career Builder', icon: 'fa-briefcase', href: '#', subItems: [
+        { label: 'Template CV', href: '/siswa/career-builder' },
+        { label: 'Portofolio', href: '/siswa/career-builder' }
+      ]},
+      { id: 'academic', label: 'Academic Info', icon: 'fa-graduation-cap', href: '/siswa/dashboard', subItems: [] }
+    ];
+  } else if (user && user.role === 'guru') {
+    portalLabel = 'TEACHER PORTAL';
+    menuItems = [
+      { id: 'dashboard', label: 'Dashboard', icon: 'fa-grid-2', href: '/guru/dashboard', subItems: [] },
+      { id: 'rapor', label: 'Rapor Digital', icon: 'fa-book-open', href: '#', subItems: [
+        { label: 'Input Nilai', href: '/guru/input-nilai' },
+        { label: 'Validasi Nilai', href: '/guru/input-nilai' },
+        { label: 'Cetak Rapor', href: '/guru/input-nilai' }
+      ]},
+      { id: 'students', label: 'Data Siswa', icon: 'fa-users', href: '/guru/dashboard', subItems: [] },
+      { id: 'settings', label: 'Pengaturan', icon: 'fa-gear', href: '/guru/dashboard', subItems: [] }
+    ];
+  } else if (user && user.role === 'admin') {
+    portalLabel = 'ADMIN PANEL';
+    menuItems = [
+      { id: 'dashboard', label: 'Dashboard', icon: 'fa-grid-2', href: '/admin/dashboard', subItems: [] },
+      { id: 'master', label: 'Master Data', icon: 'fa-database', href: '#', subItems: [
+        { label: 'Data Siswa', href: '/admin/siswa' },
+        { label: 'Data Guru', href: '/admin/guru' },
+        { label: 'Data Kelas', href: '/admin/kelas' }
+      ]},
+      { id: 'mapel', label: 'Mata Pelajaran', icon: 'fa-book', href: '/admin/mapel', subItems: [] },
+      { id: 'log', label: 'Log Sistem', href: '/admin/dashboard', icon: 'fa-clock-rotate-left', subItems: [] },
+      { id: 'settings', label: 'Pengaturan', icon: 'fa-gear', href: '/admin/dashboard', subItems: [] }
+    ];
+  }
+%>
+
+<!-- Sidebar Overlay for mobile -->
+<div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden hidden backdrop-blur-sm"></div>
+
+<aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white shadow-premium transform transition-transform duration-300 -translate-x-full lg:translate-x-0">
+  <div class="h-full flex flex-col p-6">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-10 h-10 bg-sma-grey rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">E</div>
+      <div>
+        <h1 class="text-xl font-bold text-gray-800 leading-tight">E-Rapor</h1>
+        <p class="text-xs text-sma-grey font-medium tracking-wider"><%= portalLabel %></p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-1 overflow-y-auto">
+      <% menuItems.forEach(function(item) { %>
+        <div class="mb-1">
+          <% if (item.subItems.length === 0) { %>
+            <a href="<%= item.href %>"
+               class="sidebar-link flex items-center justify-between p-3 rounded-xl transition-all
+               <%= currentPath === item.href ? 'active' : 'text-gray-500 hover:bg-slate-50 hover:text-sma-grey' %>">
+              <div class="flex items-center gap-4">
+                <i class="fa-solid <%= item.icon %> w-5 text-center <%= currentPath === item.href ? '' : 'text-sma-grey' %>"></i>
+                <span class="font-medium text-sm"><%= item.label %></span>
+              </div>
+            </a>
+          <% } else { %>
+            <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                    class="sidebar-link w-full flex items-center justify-between p-3 rounded-xl transition-all text-gray-500 hover:bg-slate-50 hover:text-sma-grey">
+              <div class="flex items-center gap-4">
+                <i class="fa-solid <%= item.icon %> w-5 text-center text-sma-grey"></i>
+                <span class="font-medium text-sm"><%= item.label %></span>
+              </div>
+              <i class="fa-solid fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+            </button>
+            <div class="pl-12 mt-1 space-y-1 <%= item.subItems.some(function(s) { return currentPath === s.href; }) ? '' : 'hidden' %>">
+              <% item.subItems.forEach(function(sub) { %>
+                <a href="<%= sub.href %>"
+                   class="block text-sm py-2 px-3 rounded-lg transition-colors
+                   <%= currentPath === sub.href ? 'bg-slate-100 text-sma-grey font-semibold' : 'text-gray-400 hover:text-sma-grey' %>">
+                  <%= sub.label %>
+                </a>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      <% }); %>
+    </nav>
+
+    <!-- User Profile -->
+    <% if (user) { %>
+    <div class="pt-4 border-t border-gray-100">
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+        <div class="w-10 h-10 rounded-full bg-sma-grey flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <%= user.nama_lengkap.charAt(0).toUpperCase() %>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-gray-800 truncate"><%= user.nama_lengkap %></p>
+          <p class="text-xs text-sma-grey capitalize"><%= user.role %></p>
+        </div>
+        <a href="/auth/logout" title="Logout" class="text-gray-400 hover:text-red-500 transition-colors">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </a>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</aside>
+
+<script>
+  function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+  }
+</script>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body class="min-h-screen flex bg-slate-bg font-sans">
+
+  <%- include('../partials/sidebar') %>
+
+  <!-- Mobile sidebar toggle -->
+  <div class="lg:hidden fixed bottom-4 right-4 z-50">
+    <button onclick="toggleSidebar()" class="w-12 h-12 bg-sma-grey text-white rounded-full shadow-lg flex items-center justify-center">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 p-4 lg:p-8 overflow-y-auto">
+    <div class="max-w-6xl mx-auto space-y-6">
+
+      <!-- Header Section -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 fade-in">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Rapor Digital Siswa</h2>
+          <p class="text-sm text-gray-500">Lihat hasil belajar dan rekapitulasi akademik Anda.</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div class="relative">
+            <select id="semesterSelect" onchange="changeSemester(this.value)"
+                    class="appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-sma-grey focus:border-transparent shadow-sm text-sm font-medium w-full sm:w-48 cursor-pointer">
+              <% var semesters = ['Ganjil 2024/2025', 'Genap 2024/2025', 'Ganjil 2023/2024']; %>
+              <% semesters.forEach(function(s) { %>
+                <option value="<%= s %>" <%= typeof selectedSemester !== 'undefined' && selectedSemester === s ? 'selected' : '' %>><%= s %></option>
+              <% }); %>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+
+          <a href="/api/rapor/download" class="bg-white border border-sma-grey text-sma-grey hover:bg-sma-grey hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Report Card -->
+      <div class="bg-white rounded-3xl shadow-premium overflow-hidden fade-in relative border border-gray-100">
+
+        <!-- Verified Badge -->
+        <div class="absolute top-6 right-6 bg-green-50 border border-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-sm z-10">
+          <i class="fa-solid fa-shield-halved"></i> DATA TERVERIFIKASI
+        </div>
+
+        <!-- Student Info Header -->
+        <div class="bg-slate-50 p-6 border-b border-gray-100">
+          <div class="flex flex-col md:flex-row gap-4 md:items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 rounded-2xl bg-sma-grey flex items-center justify-center text-white text-2xl font-bold shadow-sm border-2 border-white">
+                <%= user.nama_lengkap.charAt(0).toUpperCase() %>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800"><%= user.nama_lengkap %></h3>
+                <p class="text-sm text-gray-500">
+                  NISN: <%= typeof siswaDetail !== 'undefined' ? siswaDetail.nisn : '-' %> |
+                  Kelas: <%= typeof kelas !== 'undefined' ? kelas.nama_kelas : '-' %>
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-sma-grey uppercase font-semibold tracking-wider">Semester</p>
+              <p class="text-lg font-bold text-gray-800"><%= typeof selectedSemester !== 'undefined' ? selectedSemester : 'Ganjil 2024/2025' %></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="p-6 overflow-x-auto">
+          <table class="w-full min-w-[600px] text-left border-collapse">
+            <thead>
+              <tr class="text-xs uppercase tracking-wider text-sma-grey border-b border-gray-200">
+                <th class="pb-3 pl-2 font-semibold">No</th>
+                <th class="pb-3 font-semibold w-1/3">Mata Pelajaran</th>
+                <th class="pb-3 text-center font-semibold">KKM</th>
+                <th class="pb-3 text-center font-semibold">Nilai Pengetahuan</th>
+                <th class="pb-3 text-center font-semibold">Nilai Keterampilan</th>
+                <th class="pb-3 text-center font-semibold">Predikat</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
+              <% if (typeof nilai !== 'undefined' && nilai.length > 0) { %>
+                <% nilai.forEach(function(row, idx) { %>
+                <tr class="group hover:bg-slate-50 transition-colors">
+                  <td class="py-4 pl-2 font-medium text-gray-400"><%= idx + 1 %></td>
+                  <td class="py-4 font-semibold text-gray-800"><%= row.nama_mapel %></td>
+                  <td class="py-4 text-center text-gray-500"><%= row.kkm %></td>
+                  <td class="py-4 text-center font-medium"><%= row.nilai_pengetahuan || '-' %></td>
+                  <td class="py-4 text-center font-medium"><%= row.nilai_keterampilan || '-' %></td>
+                  <td class="py-4 text-center">
+                    <%
+                      var gradeColor = 'text-yellow-600 bg-yellow-50';
+                      if (row.predikat === 'A') gradeColor = 'text-green-600 bg-green-50';
+                      else if (row.predikat === 'B') gradeColor = 'text-blue-600 bg-blue-50';
+                    %>
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold <%= gradeColor %>">
+                      <%= row.predikat || '-' %>
+                    </span>
+                  </td>
+                </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-gray-400">
+                    <i class="fa-solid fa-inbox text-3xl mb-3 block"></i>
+                    Belum ada data nilai untuk semester ini.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer Summary -->
+        <div class="bg-slate-50/50 p-6 border-t border-gray-100">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Attendance -->
+            <div>
+              <h4 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fa-regular fa-calendar-check text-sma-grey"></i> Ketidakhadiran
+              </h4>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white p-3 rounded-xl border border-gray-100 text-center shadow-sm">
+                  <p class="text-xs text-gray-400 mb-1">Sakit</p>
+                  <p class="text-xl font-bold text-sma-grey"><%= typeof kehadiran !== 'undefined' ? kehadiran.sakit : 0 %></p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-gray-100 text-center shadow-sm">
+                  <p class="text-xs text-gray-400 mb-1">Izin</p>
+                  <p class="text-xl font-bold text-sma-grey"><%= typeof kehadiran !== 'undefined' ? kehadiran.izin : 0 %></p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-gray-100 text-center shadow-sm">
+                  <p class="text-xs text-gray-400 mb-1">Alpa</p>
+                  <p class="text-xl font-bold text-red-500"><%= typeof kehadiran !== 'undefined' ? kehadiran.alpa : 0 %></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Extracurriculars -->
+            <div>
+              <h4 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-medal text-sma-grey"></i> Ekstrakurikuler
+              </h4>
+              <div class="space-y-3">
+                <% if (typeof ekskul !== 'undefined' && ekskul.length > 0) { %>
+                  <% ekskul.forEach(function(e) { %>
+                  <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-star"></i>
+                      </div>
+                      <span class="text-sm font-medium text-gray-700"><%= e.nama_ekskul %></span>
+                    </div>
+                    <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded"><%= e.nilai %></span>
+                  </div>
+                  <% }); %>
+                <% } else { %>
+                  <p class="text-xs text-gray-400">Belum ada data ekstrakurikuler.</p>
+                <% } %>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Document Footer -->
+        <div class="text-center text-xs text-gray-400 py-4 border-t border-gray-50">
+          <p>Dokumen ini diterbitkan secara digital oleh E-Rapor System SMA.</p>
+          <p class="mt-1">Tanggal Cetak: <%= new Date().toLocaleDateString('id-ID') %></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function changeSemester(val) {
+      var parts = val.split(' ');
+      window.location.href = '/siswa/rapor?semester=' + parts[0] + '&tahun=' + parts[1];
+    }
+  </script>
+
+</body>
+</html>
